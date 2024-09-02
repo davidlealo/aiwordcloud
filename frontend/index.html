@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Transcription and WordCloud</title>
+</head>
+<body>
+    <h1>Transcribe Audio and Generate WordCloud</h1>
+    <form id="uploadForm">
+        <label for="apiKey">OpenAI API Key:</label>
+        <input type="text" id="apiKey" name="apiKey" required>
+        <br><br>
+        <label for="audio">Upload MP3:</label>
+        <input type="file" id="audio" name="audio" accept="audio/mp3" required>
+        <br><br>
+        <button type="submit">Transcribe and Generate WordCloud</button>
+    </form>
+    <br>
+    <img id="wordcloudImage" src="" alt="WordCloud Image" style="display:none;">
+    <script>
+        const form = document.getElementById('uploadForm');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const formData = new FormData();
+            formData.append('apiKey', document.getElementById('apiKey').value);
+            formData.append('audio', document.getElementById('audio').files[0]);
+
+            const response = await fetch('http://localhost:3000/transcribe', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            const imageUrl = result.imageUrl;
+
+            const wordcloudImage = document.getElementById('wordcloudImage');
+            wordcloudImage.src = imageUrl;
+            wordcloudImage.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
