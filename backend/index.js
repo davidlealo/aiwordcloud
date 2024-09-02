@@ -3,6 +3,8 @@ const multer = require('multer');
 const { Configuration, OpenAIApi } = require('openai');
 const { createCanvas } = require('canvas');
 const WordCloud = require('wordcloud');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
@@ -21,13 +23,15 @@ app.post('/transcribe', upload.single('audio'), async (req, res) => {
 
     try {
         // Transcripción del audio
-        const transcription = await openai.createTranscription({
-            file: audioPath,
-            model: "whisper-1",
-            language: "es"
-        });
+        const transcriptionResponse = await openai.createTranscription(
+            fs.createReadStream(audioPath), // Necesitamos usar un stream
+            "whisper-1",
+            {
+                language: "es"
+            }
+        );
 
-        const text = transcription.data.text;
+        const text = transcriptionResponse.data.text;
 
         // Crear la nube de palabras
         const canvas = createCanvas(800, 600);
@@ -50,6 +54,13 @@ app.post('/transcribe', upload.single('audio'), async (req, res) => {
 
         const imageUrl = canvas.toDataURL();
 
+        // Eliminar el archivo temporal después de usarlo
+        fs.unlink(audioPath, (err) => {
+            if (err) {
+                console.error('Error al eliminar el archivo temporal:', err);
+            }
+        });
+
         res.json({ imageUrl });
 
     } catch (error) {
@@ -61,4 +72,4 @@ app.post('/transcribe', upload.single('audio'), async (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto ${PORT}`);
-});
+})
