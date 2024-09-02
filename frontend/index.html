@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Transcription and WordCloud</title>
 </head>
+
 <body>
     <h1>Transcribe Audio and Generate WordCloud</h1>
     <form id="uploadForm">
@@ -18,7 +20,9 @@
     </form>
     <br>
     <img id="wordcloudImage" src="" alt="WordCloud Image" style="display:none;">
+    
     <script>
+        // Capturar el formulario usando el ID
         const form = document.getElementById('uploadForm');
 
         form.addEventListener('submit', async (event) => {
@@ -28,18 +32,27 @@
             formData.append('apiKey', document.getElementById('apiKey').value);
             formData.append('audio', document.getElementById('audio').files[0]);
 
-            const response = await fetch('http://localhost:3000/transcribe', {
-                method: 'POST',
-                body: formData
-            });
+            try {
+                const response = await fetch('http://localhost:3000/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
 
-            const result = await response.json();
-            const imageUrl = result.imageUrl;
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-            const wordcloudImage = document.getElementById('wordcloudImage');
-            wordcloudImage.src = imageUrl;
-            wordcloudImage.style.display = 'block';
+                const result = await response.json();
+                const imageUrl = result.imageUrl;
+
+                const wordcloudImage = document.getElementById('wordcloudImage');
+                wordcloudImage.src = imageUrl;
+                wordcloudImage.style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+            }
         });
     </script>
 </body>
+
 </html>
